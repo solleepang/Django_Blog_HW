@@ -15,10 +15,9 @@ class UserCreationForm(forms.ModelForm):
 
     class Meta:
         model = User
-        fields = ('email',)
+        fields = ('email','username',)
 
     def clean_password2(self):
-        # Check that the two password entries match
         password1 = self.cleaned_data.get("password1")
         password2 = self.cleaned_data.get("password2")
         if password1 and password2 and password1 != password2:
@@ -26,7 +25,6 @@ class UserCreationForm(forms.ModelForm):
         return password2
 
     def save(self, commit=True):
-        # Save the provided password in hashed format
         user = super().save(commit=False)
         user.set_password(self.cleaned_data["password1"])
         if commit:
@@ -39,33 +37,29 @@ class UserChangeForm(forms.ModelForm):
 
     class Meta:
         model = User
-        fields = ('email', 'password', 'is_active', 'is_admin')
+        fields = ('email', 'username', 'password', 'is_active', 'is_admin',)
 
 
 class UserAdmin(BaseUserAdmin):
     form = UserChangeForm
     add_form = UserCreationForm
 
-    # The fields to be used in displaying the User model.
-    # These override the definitions on the base UserAdmin
-    # that reference specific fields on auth.User.
-    list_display = ('email', 'is_admin')
-    list_filter = ('is_admin',)
+    # 어드민 페이지 설정 
+    list_display = ('email', 'username', 'is_admin') # 목록에서 보이는 필드
+    list_filter = ('is_admin',) # 필더 설정
     fieldsets = (
-        (None, {'fields': ('email', 'password')}),
-        (('Personal info'), {'fields': ('nickname',
-         'username', 'fullname', 'date_of_birth')}),
+        (None, {'fields': ('email','username', 'password')}),
+        (('Personal info'), {'fields': ('nickname', 'fullname', 'date_of_birth')}),
         ('Permissions', {'fields': ('is_admin',)}),
     )
-    # add_fieldsets is not a standard ModelAdmin attribute. UserAdmin
-    # overrides get_fieldsets to use this attribute when creating a user.
+
     add_fieldsets = (
         (None, {
             'classes': ('wide',),
             'fields': ('email', 'username', 'fullname', 'nickname', 'date_of_birth', 'password1', 'password2'),
         }),
     )
-    search_fields = ('email',)
+    search_fields = ('email', 'username') # 검색될 필드
     ordering = ('email',)
     filter_horizontal = ()
 

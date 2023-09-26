@@ -7,28 +7,23 @@ from django.contrib.auth.models import (
 
 class UserManager(BaseUserManager):
 
-    def create_user(self, email, password=None):
-        """
-        유저아이디, 이메일, 이름, 닉네임, 비밀번호 받아 User 인스턴스 생성
-        """
+    def create_user(self, email, username, password=None):
         if not email:
             raise ValueError('Users must have an email address')
 
         user = self.model(
             email=self.normalize_email(email),
+            username=username,
         )
 
         user.set_password(password)
         user.save(using=self._db)
         return user
 
-    def create_superuser(self, email, password=None):
-        """
-        유저아이디, 이메일, 이름, 닉네임, 비밀번호 받아 User 인스턴스 생성,
-        최상위 권한 부여
-        """
+    def create_superuser(self, email, username, password=None):
         user = self.create_user(
             email,
+            username=username,
             password=password,
         )
         user.is_admin = True
@@ -50,35 +45,24 @@ class User(AbstractBaseUser):
     fullname = models.CharField(
         verbose_name=('Full name'),
         max_length=30,
-        null=True,
     )
     nickname = models.CharField(
         verbose_name=('Nickname'),
         max_length=30,
         unique=True,
     )
-    join_date = models.DateField(default=timezone.now)
+    join_date = models.DateTimeField(default=timezone.now)
     is_active = models.BooleanField(default=True)
     is_admin = models.BooleanField(default=False)
-    date_of_birth = models.DateField(default=timezone.now)
+    date_of_birth = models.DateTimeField(default=timezone.now)
 
     objects = UserManager()
 
-    USERNAME_FIELD = 'email'
+    USERNAME_FIELD = 'username'
     REQUIRED_FIELDS = []
 
     def __str__(self):
-        return self.email
-
-    def has_perm(self, perm, obj=None):
-        "Does the user have a specific permission?"
-        # Simplest possible answer: Yes, always
-        return True
-
-    def has_module_perms(self, app_label):
-        "Does the user have permissions to view the app `app_label`?"
-        # Simplest possible answer: Yes, always
-        return True
+        return self.username
 
     @property
     def is_staff(self):
